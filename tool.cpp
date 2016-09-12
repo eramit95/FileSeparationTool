@@ -15,8 +15,8 @@ void createDotCPP(const char*s,ifstream&fin){
 	strcpy(arr,s);
 	strcat(arr,".cpp");
 	ofstream fout(arr);
-
 }
+
 int main(){
 	char path[]="main2.cpp";
 	//I need to create this a string array...
@@ -25,6 +25,7 @@ int main(){
 	string s, sub;
 	int k=0;
 	ifstream fin(path);
+	ofstream fout;
 	while(!fin.eof()){
 		getline(fin,s);
 		int i=0;
@@ -52,19 +53,41 @@ int main(){
 			createDotCPP(sarr[ii].c_str(),fin); 	
 		}
 	}
-	int i =0 ;
+	int i =0, j =1;
 	k=0;
+	fin.clear();
+	fin.seekg(0);
 	while(!fin.eof()){
 		getline(fin, s);
 		//for inserting all includes
-		if(s[0] =='#'){
-			sub = sub + s;
+		if(s.find("#") != string::npos || s.find("using") != string::npos){
+			sub = sub + "\n" + s;
 			k++;
 		}
 		//TO CREATE FILE OUTPUTS FOR .H
-		if(sarr[i] != ""){
-			ofstream fout(sarr[i]+".h");
-			fout << s;
+		if(sarr[i] != "" && s.find("class ") != string::npos){
+			string str = sarr[i] + ".h";
+			fout.open(str.c_str(), ios::out | ios::app);
+			fout << sub << endl;
+			fout << s << endl;
+			i++;
+		}
+		if(fout.is_open()){
+			if(s.find("}") != string::npos){
+				j--;
+			}
+			if(j==0){
+				fout << "};" << endl;
+				fout.close();
+				j=1;
+			}
+			else if(!( s.find("class ") != string::npos) && !(s.find("{")!= string::npos) && j == 1 && !(s.find("}")!= string::npos)){
+				fout << s << endl;
+			}
+			if(s.find("{")!= string::npos && !( s.find("class ") != string::npos)){
+				fout << s.replace(s.find("{"),1,";") << endl;
+				j++;
+			}
 		}	
 	}
 	fin.close();
